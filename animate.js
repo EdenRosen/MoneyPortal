@@ -78,11 +78,11 @@ function animate() {
         let x
         let y
         if (b.mx == undefined) {
-            x = b.x+0.5
-            y = b.y+0.5
+            x = b.x
+            y = b.y
         } else {
-            x = b.x+0.5+(b.mx-b.x)*t
-            y = b.y+0.5+(b.my-b.y)*t
+            x = b.x+(b.mx-b.x)*t
+            y = b.y+(b.my-b.y)*t
         }
         if (dis(player.x,player.y,x,y) < b.r+0.5 & !immortal) {
             death()
@@ -91,25 +91,11 @@ function animate() {
     if (player.y > 50) {
         death()
     }
-    // function PrintBlades() {
-    //     bladeAngle += bladeSpeed
-    
-    //     blades.forEach(b => {
-    //         let t = time/b.frames%2
-    //         if (t > 1) {
-    //             t = 2-t
-    //         }
-    //         let x = b.x+0.5+(b.mx-b.x)*t
-    //         let y = b.y+0.5+(b.my-b.y)*t
-    //         if (dis(player.x,player.y,x,y) < b.r+0.5) {
-    //             death()
-    //         }
-    //     })
-    // }
 
     if (direction != 0) {
         playerLook = direction
     }
+    checkpointsCollision() // dont move this line
 
     let x = (-player.x)*bs+cw*0.5
     let y = (-player.y)*bs+ch*0.7
@@ -122,5 +108,7 @@ function animate() {
     portalCheck()
     collision()
     coinColl()
+    orderTopHearts()
+
     time++
 }

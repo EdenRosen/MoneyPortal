@@ -11,11 +11,13 @@ const ysl = 23 // y speed limit
 const xsl = 16 // x speed limit
 const marg = 0.5
 const bladeSpeed = 3
-const startPoint = {x:25,y:-22}
+const startPoint = {x:3,y:27}
+// const startPoint = {x:23,y:-10}
 const showGrid = false
 const jforce = 20*bs/50
 const pcolors = ['blue','orange','yello','green']
-const immortal = false
+const immortal = true
+const addingBS = 1;
 
 var editOfsset = {x:0*bs,y:0}
 var coinsMaps
@@ -38,12 +40,17 @@ var time
 var camera
 var isTouchingportal
 var freeze
+var TOUCHINGAPORTAL
+var checkpoints
+var checkpoint
+var respawn
 
 const dis = (x1,y1,x2,y2) => Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2))
 
 function Restart() {
     running = false
-    player = {x:startPoint.x,y:startPoint.y,dx:0,dy:0}
+    respawn = startPoint
+    player = {x:respawn.x,y:respawn.y-6,dx:0,dy:0}
     bmap = [
         {x:-10,y:28,w:210,h:10},
         {x:13,y:28,w:100,h:10},
@@ -63,6 +70,9 @@ function Restart() {
         {x:23,y:-10,w:1,h:9},
         {x:13,y:-10,w:1,h:7},
         {x:5,y:-17,w:2,h:7},
+        {x:23,y:-24,w:4,h:1},
+        {x:53,y:-24,w:4,h:1},
+        {x:57,y:-34,w:1,h:11},
     ]
     blades = [
         {x:11,y:16,r:1},
@@ -76,7 +86,7 @@ function Restart() {
         {x:55,y:13,r:1.5,mx:70,my:28,frames:100},
         {x:70,y:13,r:1.5,mx:55,my:28,frames:100},
         {x:75,y:8,r:4},
-        {x:87,y:18,r:4},
+        {x:88,y:18,r:4},
         {x:60,y:-20,r:1.5,mx:60,my:0,frames:130},
         {x:50,y:-25,r:1.5,mx:50,my:-15,frames:30},
         {x:45,y:-15,r:1.5,mx:45,my:-25,frames:30},
@@ -88,7 +98,7 @@ function Restart() {
     ]
     portals = [
         [
-            [{x:10,y:25},{x:10,y:28}],
+            [{x:10,y:25},{x:10,y:28}], // האיבר הראשון תמיד הכי גבוהה (נמוך בויי)
             [{x:30,y:22},{x:30,y:25}],
         ],
         [
@@ -97,11 +107,18 @@ function Restart() {
         ],
     ]
     coinsMap = [
-        {x: 10, y: 10},{x: 15, y: 15}, {x: 1, y:25}
+        {x: 7, y: 16}, {x: 28, y: 26.5}, {x: 53.5, y: 17}, {x: 62.5, y: 20.5}, {x: 69, y: 17},
+        {x: 59, y: 17}, {x: 83.5, y: 6}, {x: 59.5, y: -4}, {x: 20, y: 10},
     ]
+    checkpoints = [
+        {x: 62, y: 15},
+        {x: 24, y: -16},
+        {x: 54, y: -26},
+    ]
+    checkpoint = 0
     direction = 0
     xforce = 0.3
-    coins = 0;
+    coins = 3
     isTouchingCoin = false
     jump = false
     tportal = false
@@ -113,28 +130,56 @@ function Restart() {
     camera = {x:cw*0.5-startPoint.x*bs,y:ch*0.7-startPoint.y*bs}
     isTouchingportal = undefined
     freeze = false
+    TOUCHINGAPORTAL = undefined
     clear()
     CreateMap()
     CreatePlayer()
 }
 
 
-var images = ['img/player1.png','img/ground1.png','img/ground3.png','img/blade1.png','img/player2.png', 'img/coin.png']
+var images = ['img/player1.png','img/ground1.png','img/ground3.png','img/blade1.png','img/player2.png', 'img/heart2.png', 'img/checkpoint.png']
+var sounds = ['Sounds/sound1.wav']
 
-loadImg(0)
+var linkjump = 'http://commondatastorage.googleapis.com/codeskulptor-assets/week7-bounce.m4a'
+var jump = new Audio(linkjump);
+
+window.onload = function () {
+    loadImg(0)
+}
+
 function loadImg(i) {
     let img = new Image()
     img.src = images[i]
     images[i] = img
     img.onload = () => {
         if (i == images.length-1) {
-            Play()
+            loadSound(0)
         } else {
             loadImg(i+1)
         }
     }
 }
 
+
+function loadSound(i) {
+    var sound = new Audio(sounds[i]);
+    sounds[i] = sound
+    console.log(sound.readyState)
+    if (sound.readyState == 4){
+        sound.currentTime = 0
+        console.log(1212121);
+        if (i == sounds.length-1) {
+            Play()
+        } else {
+            loadSound(i+1)
+        }
+    }
+}
+
+
+canvas.addEventListener("mousedown", function(){
+    sound[0].play()
+});
 
 function Play() {
     Restart()
@@ -151,8 +196,17 @@ function death() {
         let size = 3+(6-speed)*2
         let frames = 10+Math.random()*40
         particles.push(new Particle((player.x+0.5)*bs,(player.y+0.5)*bs,shape,deg,speed,'e',size*bs/50,'red',frames,0.2))
+        // Sound effect
+        // sounds[0].play()
     }
-    player = {x:startPoint.x,y:startPoint.y,dx:0,dy:0}
+    coins--
+    if (coins < 1) {
+        setTimeout(() => {
+            running = false
+            setTimeout(Play,10)
+        }, 700)
+    }
+    player = {x:respawn.x,y:respawn.y-6,dx:0,dy:0}
     freeze = true
     setTimeout(() => freeze = false, 700)
 }
@@ -186,9 +240,9 @@ function CreateMap() {
             if (x + i >= player.x - 100 & x + i < player.x + 100) {
                 for (let n = 0; n < h; n++) {
                     if (n == 0) {
-                        block(x+i+0.5, y+n+0.5,true)
+                        block(x+i, y+n,true)
                     } else {
-                        block(x+i+0.5, y+n+0.5)
+                        block(x+i, y+n)
                     }
                 }
             }
@@ -196,8 +250,8 @@ function CreateMap() {
     })
 
     coinsMap.forEach(pos => {
-        shape('img',pos.x*bs,pos.y*bs,bs,bs,images[5]);
-    });
+        shape('img',(pos.x+0.5)*bs,(pos.y+0.5)*bs,bs,bs,images[5]);
+    })
 
     portals.forEach((pair,i) => {
         pair.forEach(p => {
@@ -228,7 +282,18 @@ function block(x,y,grass) {
     if (grass) {
         img = images[2]
     }
-    shape('img',x*bs,y*bs,bs,bs,img);
+    shape('img',(x+0.5)*bs,(y+0.5)*bs,bs,bs,img);
+}
+
+function checkpointsCollision() {
+    for (let i = checkpoint; i < checkpoints.length; i++) {
+        let p = checkpoints[i]
+        if (dis(player.x,player.y,p.x,p.y) < 0.8) {
+            checkpoint = i+1
+            respawn = checkpoints[i]
+        }
+        shape('img',(p.x+0.7)*bs,(p.y+0.5)*bs,bs*0.8,bs,images[6],0)
+    }
 }
 
 function collision() {
@@ -338,7 +403,6 @@ function coinColl() {
         let coin = coinsMap[i]
         if (player.x + 1 >= coin.x && player.x - 1 <= coin.x && player.y + 1 >= coin.y && player.y - 1 <= coin.y) {
             if (!isTouchingCoin) {
-                console.log('+ coin')
                 isTouchingCoin = true;
                 coins += 1;
                 coinsMap.splice(i, 1); 
@@ -352,14 +416,22 @@ function coinColl() {
     }
 }
 
+function orderTopHearts() {
+    for (let i = 0; i < coins; i++) {
+        size = 1.3
+        distance = 1.2
+        shape('img', (i*distance+1)*bs,1*bs,bs*size,bs*size,images[5],0,false)
+    }
+}
+
 function portalCheck() {
     let px = player.x
     let py = player.y
-
+    
     // portals = [
     //     [
-    //         [{x:10,y:25},{x:10,y:28}],  // pair[0] pair  = portal[0]
-    //         [{x:30,y:22},{x:30,y:25}], // pair[1]
+    // pa        [{x:10,y:25},{x:10,y:28}],  // pair[0] pair  = portal[0]
+    // ir        [{x:30,y:22},{x:30,y:25}], // pair[1]
     //     ],
     //     [
     //         [{x:15,y:25},{x:15,y:28}],
@@ -368,24 +440,29 @@ function portalCheck() {
     // ]
 
     portals.forEach(pair => {
-        if (isTouchingportal == pair || player.dx > 1){
-            console.log('dsdsdsdssssssssssssssss')
-            isTouchingportal = undefined
-        } else {
-            pair.forEach(line => {
-                if ( px+0.5 >= line[0].x-0.6 && px+0.5 <= line[1].x+0.6) { // נוגע באיקס מצד שמאל
-                    if ( py+0.5 >= line[0].y && py-0.5 <= line[1].y ) {
-                        let id = pair.indexOf(line)
-                        otherLine = pair[Math.abs(id-1)]
-                        player.x = (otherLine[1].x-otherLine[0].x)/2 + otherLine[0].x
-                        player.y = (otherLine[1].y-otherLine[0].y)/2 + otherLine[0].y
-                        isTouchingportal = pair
+        let lastIs = false;
+        pair.forEach(line => {
+            if (!lastIs) {
+                if (TOUCHINGAPORTAL && TOUCHINGAPORTAL.pair == pair && TOUCHINGAPORTAL.currentline == line) {
+                    if (( ( px-0.5 >= line[0].x+addingBS || px+0.5 <= line[0].x-addingBS ) || ( px-0.5 >= line[1].x+addingBS || px+0.5 <= line[1].x-addingBS ) ) || (py+0.5 <= line[0].y-addingBS*0.5 || py-0.5 >= line[1].y + addingBS*0.5)) {
+                        TOUCHINGAPORTAL = undefined
                     }
                 } 
-            });
-        }
+                if (TOUCHINGAPORTAL == undefined || TOUCHINGAPORTAL.pair != pair){
+                    if ( px+0.5 >= line[0].x-0.6 && px+0.5 <= line[1].x+0.6) {
+                        if ( py+0.5 >= line[0].y && py-0.5 <= line[1].y ) {
+                            let id = pair.indexOf(line)
+                            otherLine = pair[Math.abs(id-1)]
+                            player.x = (otherLine[1].x-otherLine[0].x)/2 + otherLine[0].x
+                            player.y = (otherLine[1].y-otherLine[0].y)/2 + otherLine[0].y
+                            TOUCHINGAPORTAL = {pair: pair, currentline: otherLine} // להוסיף את הזה הפוראל שהוא נוגע בוא כדי לשים באיף הארוך
+                            lastIs = true;
+                        }
+                    }
+                } 
+            }
+        });
     });
-    
 }
 
 var key
@@ -417,9 +494,11 @@ $(document).keyup(function(e) {
     }
 })
 
-function shape (type, x, y, w, h, color = 'black', deg = 0) {
-    x += camera.x + editOfsset.x
-    y += camera.y + editOfsset.y
+function shape (type, x, y, w, h, color = 'black', deg = 0, cameraMoving = true) {
+    if (cameraMoving) {
+        x += camera.x + editOfsset.x
+        y += camera.y + editOfsset.y
+    }
     const rad = -deg * Math.PI / 180
     ctx.fillStyle = color
     if (type == 'r') {
