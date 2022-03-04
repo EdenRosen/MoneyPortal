@@ -138,7 +138,7 @@ function Restart() {
 
 
 var images = ['img/player1.png','img/ground1.png','img/ground3.png','img/blade1.png','img/player2.png', 'img/heart2.png', 'img/checkpoint.png']
-var sounds = ['Sounds/sound1.wav']
+var sounds = ['Sounds/sound1.wav','','']
 
 var linkjump = 'http://commondatastorage.googleapis.com/codeskulptor-assets/week7-bounce.m4a'
 var jump = new Audio(linkjump);
@@ -154,26 +154,37 @@ function loadImg(i) {
     img.onload = () => {
         if (i == images.length-1) {
             loadSound(0)
+            play()
         } else {
             loadImg(i+1)
         }
     }
 }
 
+setTimeout(() => {
+    var audio = new Audio("Sounds/spaceship.mp3");
+    audio.play()
+}, 3000)
+
 
 function loadSound(i) {
-    var sound = new Audio(sounds[i]);
-    sounds[i] = sound
-    console.log(sound.readyState)
-    if (sound.readyState == 4){
-        sound.currentTime = 0
-        console.log(1212121);
-        if (i == sounds.length-1) {
-            Play()
-        } else {
-            loadSound(i+1)
-        }
-    }
+    // let fileReader = new FileReader();
+    // fileReader.readAsDataURL(sounds[i])
+    // fileReader.onloadend = function (e) {
+    //     var image = new Audio();
+    //     image.src = e.target.result;
+    //     sounds[i] = sound
+    //     if (sound.readyState == 4){
+    //         sound.currentTime = 0
+    //         console.log(1212121);
+    //         sound.play()
+    //         if (i == sounds.length-1) {
+    //             Play()
+    //         } else {
+    //             loadSound(i+1)
+    //         }
+    //     }
+    // }
 }
 
 
