@@ -15,9 +15,10 @@ const startPoint = {x:3,y:27}
 // const startPoint = {x:23,y:-10}
 const showGrid = false
 const jforce = 20*bs/50
-const pcolors = ['blue','orange','yello','green']
+const pcolors = ['blue','orange','yellow','green']
 const immortal = true
 const addingBS = 1;
+const portalWidth = 2.2;
 
 var editOfsset = {x:0*bs,y:0}
 var coinsMaps
@@ -99,12 +100,16 @@ function Restart() {
     portals = [
         [
             [{x:10,y:25},{x:10,y:28}], // האיבר הראשון תמיד הכי גבוהה (נמוך בויי)
-            [{x:30,y:22},{x:30,y:25}],
+            [{x:21,y:22},{x:23,y:25}],
         ],
         [
             [{x:15,y:25},{x:15,y:28}],
             [{x:35,y:22},{x:35,y:25}],
         ],
+        // [
+        //     [{x:4,y:27},{x:8,y:27}],
+        //     [{x:4,y:0},{x:8,y:0}],
+        // ],
     ]
     coinsMap = [
         {x: 7, y: 16}, {x: 28, y: 26.5}, {x: 53.5, y: 17}, {x: 62.5, y: 20.5}, {x: 69, y: 17},
@@ -138,12 +143,29 @@ function Restart() {
 
 
 var images = ['img/player1.png','img/ground1.png','img/ground3.png','img/blade1.png','img/player2.png', 'img/heart2.png', 'img/checkpoint.png']
-var sounds = ['Sounds/sound1.wav','','']
-
-var linkjump = 'http://commondatastorage.googleapis.com/codeskulptor-assets/week7-bounce.m4a'
-var jump = new Audio(linkjump);
+//var sounds = ['Sounds/grass.mp3']    https://www.youtube.com/watch?v=RShxuHuisWs
+var grassAudio = new Audio("Sounds/grass.mp3");
+var heartAudio = new Audio("Sounds/heart.mp3");
+var portalAudio = new Audio("Sounds/portal.mp3");
+var checkpointAudio = new Audio("Sounds/checkpoint.mp3");
+var deathAudio = new Audio("Sounds/death1.mp3");
+var backgroundAudio = new Audio("Sounds/soundtrack1.mp3");
+portalAudio.volume = 0.3
+portalAudio.playbackRate = 1.5
+heartAudio.volume = 0.3
+heartAudio.playbackRate = 1.2
+checkpointAudio.volume = 0.3
+checkpointAudio.playbackRate = 1.2
+deathAudio.volume = 0.25
+deathAudio.playbackRate = 1.3
+backgroundAudio.volume = 0.03
+backgroundAudio.playbackRate = 1
 
 window.onload = function () {
+    //if (grassAudio.readyState != 4) check if sound is loaded then load img
+    // while (backgroundAudio.readyState != 4) {
+    //     //nothing
+    // }
     loadImg(0)
 }
 
@@ -153,47 +175,17 @@ function loadImg(i) {
     images[i] = img
     img.onload = () => {
         if (i == images.length-1) {
-            loadSound(0)
-            play()
+            Play()
         } else {
             loadImg(i+1)
         }
     }
 }
 
-setTimeout(() => {
-    var audio = new Audio("Sounds/spaceship.mp3");
-    audio.play()
-}, 3000)
-
-
-function loadSound(i) {
-    // let fileReader = new FileReader();
-    // fileReader.readAsDataURL(sounds[i])
-    // fileReader.onloadend = function (e) {
-    //     var image = new Audio();
-    //     image.src = e.target.result;
-    //     sounds[i] = sound
-    //     if (sound.readyState == 4){
-    //         sound.currentTime = 0
-    //         console.log(1212121);
-    //         sound.play()
-    //         if (i == sounds.length-1) {
-    //             Play()
-    //         } else {
-    //             loadSound(i+1)
-    //         }
-    //     }
-    // }
-}
-
-
-canvas.addEventListener("mousedown", function(){
-    sound[0].play()
-});
-
 function Play() {
     Restart()
+    backgroundAudio.play()
+    backgroundAudio.loop = true;
     if (!running) {
         running = true
         animate()
@@ -201,6 +193,7 @@ function Play() {
 }
 
 function death() {
+    deathAudio.play()
     for (let i = 0; i < 70; i++) {
         let deg = 45+Math.random()*360
         let speed = Math.random()*6
@@ -300,6 +293,7 @@ function checkpointsCollision() {
     for (let i = checkpoint; i < checkpoints.length; i++) {
         let p = checkpoints[i]
         if (dis(player.x,player.y,p.x,p.y) < 0.8) {
+            checkpointAudio.play()
             checkpoint = i+1
             respawn = checkpoints[i]
         }
@@ -375,6 +369,10 @@ function collision() {
                 result.b = 1
                 player.y = y-1
                 if (player.dy > 0) {
+                    if (player.dy > 0.5) {
+                        grassAudio.volume = player.dy*0.01
+                        grassAudio.play()
+                    }
                     if (player.dy > 15) {
                         for (let i = 0; i < 10; i++) {
                             let deg = 0+Math.random()*180
@@ -420,6 +418,8 @@ function coinColl() {
                 i--;
                 let coinInput = document.getElementById('coinsInput')
                 coinInput.value = coins
+                heartAudio.play()
+                grassAudio.play()
             }
         } else {
             isTouchingCoin = false;
@@ -436,12 +436,13 @@ function orderTopHearts() {
 }
 
 function portalCheck() {
+    const rad = Math.PI/180
     let px = player.x
     let py = player.y
     
     // portals = [
     //     [
-    // pa        [{x:10,y:25},{x:10,y:28}],  // pair[0] pair  = portal[0]
+    // pa        [{x:10,y:25},{x:10,y:28}, {color: 'green'}],  // pair[0] pair  = portal[0]
     // ir        [{x:30,y:22},{x:30,y:25}], // pair[1]
     //     ],
     //     [
@@ -450,27 +451,61 @@ function portalCheck() {
     //     ],
     // ]
 
-    portals.forEach(pair => {
+    portals.forEach((pair,i) => {
         let lastIs = false;
-        pair.forEach(line => {
+        pair.forEach((line,n) => {
             if (!lastIs) {
-                if (TOUCHINGAPORTAL && TOUCHINGAPORTAL.pair == pair && TOUCHINGAPORTAL.currentline == line) {
-                    if (( ( px-0.5 >= line[0].x+addingBS || px+0.5 <= line[0].x-addingBS ) || ( px-0.5 >= line[1].x+addingBS || px+0.5 <= line[1].x-addingBS ) ) || (py+0.5 <= line[0].y-addingBS*0.5 || py-0.5 >= line[1].y + addingBS*0.5)) {
-                        TOUCHINGAPORTAL = undefined
+                // // if (TOUCHINGAPORTAL && TOUCHINGAPORTAL.pair == pair && TOUCHINGAPORTAL.currentline == line) {
+                // //     if (( ( px-0.5 >= line[0].x+addingBS || px+0.5 <= line[0].x-addingBS ) || ( px-0.5 >= line[1].x+addingBS || px+0.5 <= line[1].x-addingBS ) ) || (py+0.5 <= line[0].y-addingBS*0.5 || py-0.5 >= line[1].y + addingBS*0.5)) {
+                // //         TOUCHINGAPORTAL = undefined
+                // //     }
+                // // } 
+               
+                    const slope = (line[1].y-line[0].y)/(line[1].x-line[0].x)
+                    const b = -(slope*line[0].x-line[0].y)
+                    let smallDistance = Math.abs(slope*px-py+b)/Math.sqrt(slope*slope+1)
+                    if (Math.abs(slope) > 10000) {
+                        smallDistance = Math.abs(player.x-line[0].x)
                     }
-                } 
-                if (TOUCHINGAPORTAL == undefined || TOUCHINGAPORTAL.pair != pair){
-                    if ( px+0.5 >= line[0].x-0.6 && px+0.5 <= line[1].x+0.6) {
-                        if ( py+0.5 >= line[0].y && py-0.5 <= line[1].y ) {
-                            let id = pair.indexOf(line)
-                            otherLine = pair[Math.abs(id-1)]
+                    const mid = {x:(line[0].x+line[1].x)/2,y:(line[0].y+line[1].y)/2}
+                    let slope2 = 10000000
+                    if (slope != 0) {
+                        slope2 = -1/slope
+                    }
+                    const abc = [slope2,-1,-slope2*mid.x+mid.y]
+                    const bigDistance = Math.abs(abc[0]*px+abc[1]*py+abc[2])/Math.sqrt(abc[0]*abc[0]+abc[1]*abc[1])
+                    const portalLength = Math.sqrt(Math.pow(line[0].x-line[1].x,2) + Math.pow(line[0].y-line[1].y,2))
+                    let touching = smallDistance*2 < portalWidth && bigDistance*2 < portalLength
+                    
+                    // if (i == 2 && n == 0) {
+                    //     console.log(abc)
+                    // }
+
+
+                    if (TOUCHINGAPORTAL && TOUCHINGAPORTAL.pair == pair && TOUCHINGAPORTAL.currentline == line) {
+                        if (!touching) {
+                            TOUCHINGAPORTAL = undefined
+                        }
+                    } 
+                    if (TOUCHINGAPORTAL == undefined || TOUCHINGAPORTAL.pair != pair){
+                        if (touching) {
+                            const id = pair.indexOf(line)
+                            const otherLine = pair[Math.abs(id-1)]
                             player.x = (otherLine[1].x-otherLine[0].x)/2 + otherLine[0].x
                             player.y = (otherLine[1].y-otherLine[0].y)/2 + otherLine[0].y
                             TOUCHINGAPORTAL = {pair: pair, currentline: otherLine} // להוסיף את הזה הפוראל שהוא נוגע בוא כדי לשים באיף הארוך
-                            lastIs = true;
+                            lastIs = true
+                            portalAudio.play()
+
+                            const deg1 = -Math.atan2(line[0].y-line[1].y,line[0].x-line[1].x)/rad
+                            const deg2 = -Math.atan2(otherLine[0].y-otherLine[1].y,otherLine[0].x-otherLine[1].x)/rad
+                            const polar = {r: Math.sqrt(player.dy*player.dy+player.dx*player.dx), a:-Math.atan2(player.dy,player.dx)/rad}
+                            const polar2 = {r:polar.r,a:polar.a+deg2%360-deg1%360}
+                            const cartes = {x:Math.cos(polar2.a*rad)*polar2.r,y:Math.sin(polar2.a*rad)*polar2.r}
+                            player.dx = cartes.x
+                            player.dy = -cartes.y
                         }
-                    }
-                } 
+                    } 
             }
         });
     });

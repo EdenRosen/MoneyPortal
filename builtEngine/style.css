@@ -1,0 +1,114 @@
+:root {
+    font-family: 'Nunito', sans-serif;
+}
+body {
+    text-align: center;
+    background: rgb(146, 146, 146);
+}
+h1 {
+    letter-spacing: 1px;
+}
+canvas {
+    margin-top: 20px;
+    margin-bottom: 100px;
+    background: rgb(208, 245, 252);
+    /* border-radius: 16px; */
+    width: 900px;
+}
+input {
+    width: 10px;
+}
+.unselectable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+button {
+    color: rgb(64, 27, 27);
+    background-color: rgb(154, 189, 165);
+    border: 1px solid black;
+    border-radius: 2px;
+}
+
+button:hover {
+    background-color: rgb(158, 235, 182);
+    transition: 0.15s ease-in-out;
+}
+
+#Delete {
+    background-color: rgb(189, 101, 101);
+}
+
+#Delete:hover {
+    background-color: rgb(235, 92, 92);
+    transition: 0.15s ease-in-out;
+}
+
+#deleteChange {
+    transition: 0.2s ease-in-out;
+    color: #0a72cd;
+    border: 1px black solid;
+    padding: 2px 4px;
+}
+
+#deleteChange:hover {
+    filter: hue-rotate(-20deg);
+    transition: 0.1s;
+}
+
+.active {
+    transform: scale(1.5, 1.5);
+    margin: 0px 20px;
+    transition: 0.2s ease-in-out;
+}
+
+
+.modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    display: block;
+    transform: scale(1.1);
+    transition: visibility 0s linear 0.25s, opacity 0.25s 0s, transform 0.25s;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 1rem 1.5rem;
+    width: 35rem;
+    border-radius: 0.5rem;
+}
+
+.close-button {
+    float: right;
+    width: 1.5rem;
+    line-height: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    background-color: lightgray;
+}
+
+.close-button:hover {
+    background-color: darkgray;
+}
+
+.show-modal {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1.0);
+    transition: visibility 0s linear 0s, opacity 0.25s 0s, transform 0.25s;
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap">
+    <link rel='stylesheet' href='style.css'/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    
+    <script defer src="../particle.js"></script>
+    <script defer src="script.js"></script>
+    <!-- <script defer src="animate.js"></script> -->
+    <title>BuildEngine - Eden Ziv</title>
+</head>
+<body>
+    <h1 class="unselectable">BuildEngine - Eden Ziv</h1>
+    <div class="SideBar">
+        <!-- <button id="Portal" onclick="ButtonOnChange(this)">Portal</button> -->
+        <button id="Ground" class="active" onclick="ButtonOnChange(this)">Ground</button>
+        <button id="Blades">Saw</button>
+        <button id="Heart" onclick="ButtonOnChange(this)">Heart</button>
+        <button id="CheckPoint" onclick="ButtonOnChange(this)">CheckPoint</button>
+        <button id="Delete" onclick="ButtonDelete()">Delete</button>
+        <span id="deleteChange">Edit Mode</span>
+    </div>
+    <canvas></canvas>
+
+    <div class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Feel this form to add a blade</h1>
+                <div class="form-group">
+                    <label for="Size">Size</label>
+                    <input type="range" class="form-input" id="Size" min="1" max="100" value="1">
+                </div>
+                <div class="form-group">
+                    <label for="Rate">Rate</label>
+                    <input type="range" class="form-input" id="Rate" min="1" max="100" value="1">
+                </div>
+                <input type="button" class="button" id="addBlade" value="Add"/>
+        </div>
+    </div>
+</body>
+</html>
